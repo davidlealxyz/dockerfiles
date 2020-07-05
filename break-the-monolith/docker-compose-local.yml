@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+
+  break-the-monolith-flask-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+      args:
+        branch: master
+        gitproject: break-the-monolith
+        deployenv: local
+    ports:
+      - 8080:8000
+    volumes:
+      - /home/david/repos/teaminternational_davidleal/break-the-monolith/:/app/
+    entrypoint: ['uwsgi', '--socket', '0.0.0.0:8000', '--processes', '5', '--protocol=http', '--module', 'application:app']
