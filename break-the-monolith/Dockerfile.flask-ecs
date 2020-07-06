@@ -1,0 +1,39 @@
+# Description:
+#   This will build the image needed to run the containers in ECS
+#
+# Build this image:
+#   docker build \
+#   --build-arg gitproject=break-the-monolith       \
+#   --build-arg branch=master                       \
+#   --build-arg deployenv=local                     \
+#   -t btm-flask -f Dockerfile.flask-ecs .
+#
+# Run This image:
+#   docker run -it -d --name flask-btm -p 8000:8000 btm-flask
+
+
+#FROM base_python:3.7
+FROM 068213000772.dkr.ecr.us-east-2.amazonaws.com/btm-ecr-repo:base_python-3.7
+
+ARG gitproject
+ARG branch
+ARG deployenv
+
+## INSTALL requirements.txt
+RUN cd /tmp/ && git clone git@github.com:interview-david-leal/${gitproject}.git --branch ${branch}  && \
+  pip3 install -r ${gitproject}/requirements/${deployenv}.txt
+
+## CREATE A SPACE TO MOUNT DATA AND MOVE TO IT
+RUN mkdir /app
+WORKDIR /app
+
+# MOVE THE CODE TO THE /APP FOLDER
+RUN mv /tmp/${gitproject}/* /app/
+
+## DO NOT RUN CELERY / UWSGI AS ROOT
+RUN groupadd -g 1000 -r flaskuser && useradd -r -u 1000 -g flaskuser flaskuser
+USER flaskuser
+
+EXPOSE 8000
+
+ENTRYPOINT ["uwsgi", "--socket", "0.0.0.0:8000", "--processes", "5", "--protocol=http", "--module", "application:app"]

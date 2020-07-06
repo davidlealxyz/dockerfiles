@@ -1,7 +1,8 @@
 # Build this iamge:
 # docker build -t base_python:3.7 -f Dockerfile.python37 .
 
-FROM debian:buster
+#FROM debian:buster
+FROM 068213000772.dkr.ecr.us-east-2.amazonaws.com/btm-ecr-repo:debian-buster
 
 ## LOCAL TIMEZONE
 ENV TZ ":America/Bogota"
